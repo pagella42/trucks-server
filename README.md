@@ -1,8 +1,4 @@
-### Clone and Deploy
-
-```bash
-git clone https://github.com/vercel/examples/tree/main/solutions/express
-```
+### Clone and Run
 
 Install the Vercel CLI:
 
