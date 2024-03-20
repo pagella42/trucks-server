@@ -1,42 +1,39 @@
 import express, { Request, Response } from "express";
 import { parseXmlToJson } from "../helpers/parseXmlToJson.js";
-import {
-  INSPECTIONS_URL,
-  VPIC_URL,
-  VPIC_URL_PARAMS,
-} from "../constants/urls.js";
-import { DateSortingType } from "../types/sorting.js";
+import { INSPECTIONS_URL } from "../constants/urls.js";
+import { DateSortingParamType, basicFilterType } from "../types/sorting.js";
 import { sortInspectionsByDate } from "../helpers/sorting.js";
 import { filterInspections } from "../helpers/filters.js";
 import { parseVehicleData } from "../helpers/parseVehicleInfo.js";
+import { getVpicUrl } from "../helpers/getVPICUrl.js";
 
 const router = express.Router();
 
 router.get("/inspections", async (req: Request, res: Response) => {
   try {
+    //query params
     const page = parseInt(req.query.page as string) || 1;
     const itemsPerPage = parseInt(req.query.itemsPerPage as string) || 20;
-    let basicFilter: string | undefined = req.query.basicFilter as
-      | string
-      | undefined;
-    let sortDate: DateSortingType | undefined = req.query.sortDate as
-      | DateSortingType
-      | undefined;
+    let basicFilter: basicFilterType = req.query.basicFilter as basicFilterType;
+    let sortDate: DateSortingParamType = req.query
+      .sortDate as DateSortingParamType;
 
+    //fetchig
+    const response = await fetch(INSPECTIONS_URL);
+    const data = await response.text();
+
+    //parsing
+    const parsedData = parseXmlToJson(data);
+
+    //sorting and filters
+    let filteredInspections = parsedData?.inspections || [];
     if (basicFilter) {
       basicFilter = decodeURIComponent(basicFilter.replace(/\+/g, " "));
     }
-
-    const response = await fetch(INSPECTIONS_URL);
-    const data = await response.text();
-    const parsedData = parseXmlToJson(data);
-
-    let filteredInspections = parsedData?.inspections || [];
-
     filteredInspections = filterInspections(filteredInspections, basicFilter);
-
     filteredInspections = sortInspectionsByDate(filteredInspections, sortDate);
 
+    //pagination
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const pageItems = filteredInspections.slice(startIndex, endIndex);
@@ -58,14 +55,16 @@ router.get("/inspections", async (req: Request, res: Response) => {
 
 router.get("/vehicleinfo/:vin", async (req: Request, res: Response) => {
   try {
+    //params
     const vin = req.params.vin;
     if (!vin) throw new Error("VIN is required");
 
-    const url = `${VPIC_URL}${vin}${VPIC_URL_PARAMS}`;
-
+    //fetching
+    const url = getVpicUrl(vin);
     const response = await fetch(url);
     const data = await response.json();
 
+    //parsing
     const parsedData = parseVehicleData(data.Results);
 
     res.send({

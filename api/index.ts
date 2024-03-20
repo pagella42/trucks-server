@@ -15,7 +15,7 @@ app.use(urlencodedParser);
 
 app.use("/", inspections);
 
-const PORT = process.env.PORT || 0; // Default to 3000 if PORT not set
+const PORT = process.env.PORT || 0;
 app.listen(PORT, () => console.log(`Server ready on port ${PORT}.`));
 
 export default app;
