@@ -5,7 +5,7 @@ import { DateSortingParamType, basicFilterType } from "../types/sorting.js";
 import { sortInspectionsByDate } from "../helpers/sorting.js";
 import { filterInspections } from "../helpers/filters.js";
 import { parseVehicleData } from "../helpers/parseVehicleInfo.js";
-import { getVpicUrl } from "../helpers/getVPICUrl.js";
+import { getVpicUrl } from "../helpers/getVpicUrl.js";
 
 const router = express.Router();
 
